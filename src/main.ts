@@ -78,7 +78,7 @@ async function init() {
   await session.play();
 
     const lens = await cameraKit.lensRepository.loadLens(
-        "77b918f0-930f-423c-be8b-05c1ccd96747",
+        "ab8ff69f-9c29-4d75-b921-1fd52eff33a6",
         "11cbcba2-1275-47ec-9916-feaa6c52d24b"
     );
     await session.applyLens(lens);
