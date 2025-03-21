@@ -1,32 +1,33 @@
-const liveRenderTarget = document.getElementById('canvas');
-const flipButton = document.getElementById('flip-button');
-const recordButton = document.getElementById('record-button');
-const progressRing = document.getElementById('progress-ring');
+import {
+    bootstrapCameraKit,
+    CameraKitSession,
+    createMediaStreamSource,
+    Transform2D,
+} from '@snap/camera-kit';
+
+const liveRenderTarget = document.getElementById('canvas') as HTMLCanvasElement;
+const flipButton = document.getElementById('flip-button') as HTMLButtonElement;
+const recordButton = document.getElementById('record-button') as HTMLButtonElement;
+const progressRing = document.getElementById('progress-ring') as HTMLDivElement;
 const progressPath = document.getElementById('progress-path');
-const previewModal = document.getElementById('preview-modal');
-const previewVideo = document.getElementById('preview-video');
-const shareButton = document.getElementById('share-button');
-const saveButton = document.getElementById('save-button');
-const closeModalButton = document.getElementById('close-modal-button');
+const previewModal = document.getElementById('preview-modal') as HTMLDivElement;
+const previewVideo = document.getElementById('preview-video') as HTMLVideoElement;
+const shareButton = document.getElementById('share-button') as HTMLButtonElement;
+const saveButton = document.getElementById('save-button') as HTMLButtonElement;
+const closeModalButton = document.getElementById('close-modal-button') as HTMLButtonElement;
+
 
 let isBackFacing = true;
-let mediaStream;
+let mediaStream: MediaStream;
 let isFlipping = false;
 let currentRotation = 0; // Track the current rotation
-let session;
-let mediaRecorder = null;
-let downloadUrl = null;
-let recordingStartTime = null;
+let session: CameraKitSession;
+let mediaRecorder: MediaRecorder | null = null;
+let downloadUrl: string | null = null;
+let recordingStartTime: number | null = null;
 const RECORD_DURATION = 60;
 
 async function init() {
-    const {
-        bootstrapCameraKit,
-        CameraKitSession,
-        createMediaStreamSource,
-        Transform2D,
-    } = await import('@snap/camera-kit');
-
     const cameraKit = await bootstrapCameraKit({
         apiToken: 'eyJhbGciOiJIUzI1NiIsImtpZCI6IkNhbnZhc1MyU0hNQUNQcm9kIiwidHlwIjoiSldUIn0.eyJhdWQiOiJjYW52YXMtY2FudmFzYXBpIiwiaXNzIjoiY2FudmFzLXMyc3Rva2VuIiwibmJmIjoxNzM0NjkzMzE0LCJzdWIiOiIzMmZhMmZlNC0wYmYxLTQ2N2QtODM4Mi04MTVmNzliMjFkMWJ-U1RBR0lOR35iMWI3YmFjZi01ZGI3LTQxMDAtOWIzNC0zZDEwODJmNmMyYTAifQ.681nZeSjvWHzWBiZbHY-T3Yq6M6qk3j9zgk9nM6I06M'
     });
@@ -34,8 +35,8 @@ async function init() {
     const desiredAspectRatio = 9 / 16; // Example 9:16 ratio (e.g., portrait)
 
     // Calculate the best fit canvas dimensions based on screen and aspect ratio
-    let canvasWidth;
-    let canvasHeight;
+    let canvasWidth: number;
+    let canvasHeight: number;
 
     if (window.innerWidth / window.innerHeight > desiredAspectRatio) {
         // If the screen is wider than the desired aspect ratio, set height to match screen
@@ -87,7 +88,7 @@ async function init() {
 }
 
 
-function bindFlipCamera(session) {
+function bindFlipCamera(session: CameraKitSession) {
     flipButton.style.cursor = 'pointer';
 
     flipButton.addEventListener('click', () => {
@@ -97,18 +98,18 @@ function bindFlipCamera(session) {
         }
     });
 
-    updateCamera(session); //Initial camera setup.  Important to call it here.
+    updateCamera(session);
 }
 
-async function updateCamera(session) {
+async function updateCamera(session: CameraKitSession) {
     isFlipping = true;
     flipButton.disabled = true;
-    isBackFacing = !isBackFacing;
+  isBackFacing = !isBackFacing;
 
-    if (mediaStream) {
-        session.pause();
-        mediaStream.getVideoTracks()[0].stop();
-    }
+  if (mediaStream) {
+      session.pause();
+      mediaStream.getVideoTracks()[0].stop();
+  }
 
     mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -119,23 +120,23 @@ async function updateCamera(session) {
     });
 
 
-    const source = createMediaStreamSource(mediaStream);
+  const source = createMediaStreamSource(mediaStream);
 
-    await session.setSource(source);
+  await session.setSource(source);
 
     if (!isBackFacing) {
         source.setTransform(Transform2D.MirrorX);
     }
 
-    session.play();
+  session.play();
 
-    currentRotation += 180; // Update current rotation
-    flipButton.style.setProperty('--current-rotation', `${currentRotation}deg`);
-    setTimeout(() => {
-        isFlipping = false;
-        flipButton.disabled = false;
-        flipButton.classList.remove('animate-flip');
-    }, 500)
+      currentRotation += 180; // Update current rotation
+      flipButton.style.setProperty('--current-rotation', `${currentRotation}deg`);
+  setTimeout(() => {
+    isFlipping = false;
+    flipButton.disabled = false;
+      flipButton.classList.remove('animate-flip');
+  }, 500)
 }
 
 function bindRecorder() {
@@ -159,7 +160,7 @@ async function startRecording() {
 
     mediaRecorder = new MediaRecorder(mediaStream);
 
-    const chunks = [];
+    const chunks: BlobPart[] = [];
 
     mediaRecorder.addEventListener('dataavailable', (event) => {
         if (event.data.size > 0) {
@@ -172,8 +173,8 @@ async function startRecording() {
         downloadUrl = window.URL.createObjectURL(blob);
         previewVideo.src = downloadUrl;
         previewModal.style.display = 'flex'
-        previewModal.classList.add('show');
-        recordButton.classList.remove('recording');
+           previewModal.classList.add('show');
+          recordButton.classList.remove('recording');
         progressRing.style.display = 'none';
     });
 
@@ -191,12 +192,12 @@ function updateProgress() {
     const progressPercentage = Math.min(100, (elapsedTime / 1000 / RECORD_DURATION) * 100);
     const circumference = 2 * Math.PI * 30;
     const dashOffset = circumference * (1 - progressPercentage / 100);
-
+    
     if(progressPath instanceof SVGPathElement)
     {
        progressPath.style.strokeDashoffset = String(dashOffset);
     }
-
+    
 
     if (elapsedTime / 1000 >= RECORD_DURATION) {
         stopRecording();
@@ -214,7 +215,7 @@ function stopRecording() {
      {
          progressPath.style.strokeDashoffset = String(188);
      }
-
+    
     recordButton.classList.remove('recording');
     progressRing.style.display = 'none';
 }
