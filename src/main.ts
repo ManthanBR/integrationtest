@@ -20,7 +20,7 @@ const closeModalButton = document.getElementById('close-modal-button') as HTMLBu
 let isBackFacing = true;
 let mediaStream: MediaStream;
 let isFlipping = false;
-let currentRotation = 0; // Track the current rotation
+let currentRotation = 0; // Track the current rotation 
 let session: CameraKitSession;
 let mediaRecorder: MediaRecorder | null = null;
 let downloadUrl: string | null = null;
@@ -29,7 +29,7 @@ const RECORD_DURATION = 60;
 
 async function init() {
     const cameraKit = await bootstrapCameraKit({
-        apiToken: 'eyJhbGciOiJIUzI1NiIsImtpZCI6IkNhbnZhc1MyU0hNQUNQcm9kIiwidHlwIjoiSldUIn0.eyJhdWQiOiJjYW52YXMtY2FudmFzYXBpIiwiaXNzIjoiY2FudmFzLXMyc3Rva2VuIiwibmJmIjoxNzM0NjkzMzE0LCJzdWIiOiIzMmZhMmZlNC0wYmYxLTQ2N2QtODM4Mi04MTVmNzliMjFkMWJ-U1RBR0lOR35iMWI3YmFjZi01ZGI3LTQxMDAtOWIzNC0zZDEwODJmNmMyYTAifQ.681nZeSjvWHzWBiZbHY-T3Yq6M6qk3j9zgk9nM6I06M'
+        apiToken: 'eyJhbGciOiJIUzI1NiIsImtpZCI6IkNhbnZhc1MyU0hNQUNQcm9kIiwidHlwIjoiSldUIn0.eyJhdWQiOiJjYW52YXMtY2FudmFzYXBpIiwiaXNzIjoiY2FudmFzLXMyc3Rva2VuIiwibmJmIjoxNzI2NTY1MzEwLCJzdWIiOiIyN2NmNDQwYy04YjBkLTQ5ZDEtYTM2MC04YjdkODQ5OTM3ZWJ-U1RBR0lOR340Y2ZhYTJiOC1kYWY4LTRhZDYtODYwNy1iMmI5NWYzMDVmMzAifQ.q8qMDDOzMv4jFiZ8NRqQ8-qDJMV4l5YmOex67WC6DqI'
     });
     const devicePixelRatio = window.devicePixelRatio || 1;
     const desiredAspectRatio = 9 / 16; // Example 9:16 ratio (e.g., portrait)
@@ -78,7 +78,7 @@ async function init() {
   await session.play();
 
     const lens = await cameraKit.lensRepository.loadLens(
-        "fb6410ff-f10b-438a-a8b0-70cc6012b2b6",
+        "77b918f0-930f-423c-be8b-05c1ccd96747",
         "11cbcba2-1275-47ec-9916-feaa6c52d24b"
     );
     await session.applyLens(lens);
@@ -219,56 +219,40 @@ function stopRecording() {
     recordButton.classList.remove('recording');
     progressRing.style.display = 'none';
 }
-function bindModal() {
+function bindModal(){
     closeModalButton.addEventListener('click', () => {
         previewModal.style.display = 'none';
-        previewModal.classList.remove('show');
+       previewModal.classList.remove('show');
         previewVideo.pause();
         previewVideo.currentTime = 0;
+
     });
-
-    shareButton.addEventListener('click', async () => {
-        if (downloadUrl) {
-            try {
-                const response = await fetch(downloadUrl);
-                if (!response.ok) {
-                  throw new Error(`Failed to fetch video: ${response.status} ${response.statusText}`);
+      shareButton.addEventListener('click', async() => {
+        if (downloadUrl)
+        {
+            const blob = await fetch(downloadUrl).then(r => r.blob());
+             const filesArray = [
+              new File([blob], 'video.webm', {type: 'video/webm'})
+            ];
+            if(navigator.canShare && navigator.canShare({files: filesArray}))
+              {
+                    navigator.share({
+                      files: filesArray,
+                    })
                 }
-                const blob = await response.blob();
-
-                // Explicitly create a Blob with the correct MIME type.
-                const videoBlob = new Blob([blob], { type: 'video/mp4' });
-
-                // Create a File object with the correct name and type.
-                const videoFile = new File([videoBlob], 'video.mp4', { type: 'video/mp4' });
-
-                //Check for share and then share it.
-                if (navigator.canShare && navigator.canShare({ files: [videoFile] })) {
-                    await navigator.share({
-                        files: [videoFile],
-                        title: 'Camera Kit Recording', // Optional: Add a title
-                    });
-                } else {
-                    console.error('Sharing not supported or file is incompatible.');
-                     alert('Sharing not supported in this browser or the file type is incompatible.');
-                }
-            } catch (error) {
-                console.error('Error sharing video:', error);
-                alert(`Error sharing video: ${error}`);
-            }
         }
     });
-
     saveButton.addEventListener('click', () => {
-        if (downloadUrl) {
-            const link = document.createElement('a');
-            link.setAttribute('style', 'display: none');
-            link.href = downloadUrl;
-            link.download = 'camera-kit-web-recording.mp4';
-            link.click();
-            link.remove();
-        }
-    });
+      if (downloadUrl)
+      {
+        const link = document.createElement('a');
+        link.setAttribute('style', 'display: none');
+        link.href = downloadUrl;
+        link.download = 'camera-kit-web-recording.webm';
+        link.click();
+        link.remove();
+      }
+  });
 }
 
 init();
