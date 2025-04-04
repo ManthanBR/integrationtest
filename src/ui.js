@@ -70,7 +70,7 @@ export class UIManager {
           await navigator.share({
             files: [file],
             title: "Wework sticker",
-            text: "Made By FilterYou a True Social AR Company",
+            text: "Made By FilterYou | A True Social Xperience",
           })
           console.log("File shared successfully")
         } else {
