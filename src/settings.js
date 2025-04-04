@@ -10,7 +10,7 @@ export const Settings = {
     constraints: {
       front: {
         video: {
-          facingMode: { exact: "environment" },
+          facingMode: { exact: "user" },
         },
         audio: true,
       },
@@ -22,7 +22,7 @@ export const Settings = {
       },
       desktop: {
         video: {
-          facingMode: "environment",
+          facingMode: "user",
         },
         audio: true,
       },
