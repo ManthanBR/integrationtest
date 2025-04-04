@@ -69,8 +69,8 @@ export class UIManager {
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
             files: [file],
-            title: "Recorded Video",
-            text: "Check out this recording!",
+            title: "Wework sticker",
+            text: "Made By FilterYou",
           })
           console.log("File shared successfully")
         } else {
